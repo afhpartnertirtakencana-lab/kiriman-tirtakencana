@@ -1602,17 +1602,25 @@ function loadTrxFromSheets(showMsg){
     var s=String(v).trim();
     // Sudah format YYYY-MM-DD
     if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
-    // Format DD/MM/YYYY atau MM/DD/YYYY
+    // Format DD/MM/YYYY (lokal ID)
     if(s.indexOf('/')>-1){
       var p=s.split('/');
       if(p.length===3){
-        if(p[2].length===4) return p[2]+'-'+(p[1].length<2?'0':'')+p[1]+'-'+(p[0].length<2?'0':'')+p[0];
-        return p[0]+'-'+(p[1].length<2?'0':'')+p[1]+'-'+(p[2].length<2?'0':'')+p[2];
+        var yy=p[2].length===4?p[2]:p[0];
+        var mm=p[2].length===4?p[1]:p[1];
+        var dd=p[2].length===4?p[0]:p[2];
+        return yy+'-'+(mm.length<2?'0':'')+mm+'-'+(dd.length<2?'0':'')+dd;
       }
     }
-    // Coba parse sebagai Date
+    // Coba parse sebagai Date — GUNAKAN LOCAL DATE bukan UTC
     var d=new Date(v);
-    if(!isNaN(d.getTime())) return d.toISOString().slice(0,10);
+    if(!isNaN(d.getTime())){
+      var yy=d.getFullYear();
+      var mm=String(d.getMonth()+1).padStart(2,'0');
+      var dd=String(d.getDate()).padStart(2,'0');
+      return yy+'-'+mm+'-'+dd; // local timezone, tidak UTC
+    }
+    return s.slice(0,10);
     return s;
   })(row[2]),drv:String(row[3]||'').trim(),rit:String(row[4]||'').trim(),st:String(row[5]||'').trim()==='Kiriman'?'K':'T',sku:String(row[6]||'').trim(),nama:String(row[7]||'').trim(),harga:parseFloat(row[8])||0,qty:parseFloat(row[9])||0,disc:parseFloat(row[10])||0,net:parseFloat(row[11])||0,tot:parseFloat(row[12])||0}; }).filter(function(r){ return r.id&&r.tgl; });
     trx=loaded; saveTrx();
